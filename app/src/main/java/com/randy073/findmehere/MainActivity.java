@@ -1,13 +1,10 @@
 package com.randy073.findmehere;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.graphics.Color;
@@ -26,15 +23,16 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ShareActionProvider;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap.CancelableCallback;
 import com.google.android.gms.maps.GoogleMap.OnCameraChangeListener;
@@ -52,6 +50,12 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseQuery;
 import com.parse.ParseQueryAdapter;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends FragmentActivity implements LocationListener,
     GoogleApiClient.ConnectionCallbacks,
@@ -133,6 +137,9 @@ public class MainActivity extends FragmentActivity implements LocationListener,
 
   // Adapter for the Parse query
   private ParseQueryAdapter<AnywallPost> postsQueryAdapter;
+
+    private ShareActionProvider mShareActionProvider;
+
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -248,10 +255,33 @@ public class MainActivity extends FragmentActivity implements LocationListener,
               "Please try again after your location appears on the map.", Toast.LENGTH_LONG).show();
           return;
         }
+          double latitude = myLoc.getLatitude();
+          double logitude = myLoc.getLongitude();
 
-        Intent intent = new Intent(MainActivity.this, PostActivity.class);
-        intent.putExtra(Application.INTENT_EXTRA_LOCATION, myLoc);
-        startActivity(intent);
+          String locationStr = "http://maps.google.com/maps?&daddr=" + latitude + "," + logitude;
+
+          ClipboardManager clipboard = (ClipboardManager)
+                  getSystemService(Context.CLIPBOARD_SERVICE);
+
+
+          ClipData clip = ClipData.newPlainText("loc", locationStr);
+
+          Context context = getApplicationContext();
+
+
+          clipboard.setPrimaryClip(clip);
+
+          CharSequence text = "Location copied!";
+          int duration = Toast.LENGTH_SHORT;
+
+          Toast toast = Toast.makeText(context, text, duration);
+          toast.show();
+
+
+
+//        Intent intent = new Intent(MainActivity.this, PostActivity.class);
+//        intent.putExtra(Application.INTENT_EXTRA_LOCATION, myLoc);
+//        startActivity(intent);
       }
     });
   }
@@ -732,7 +762,15 @@ public class MainActivity extends FragmentActivity implements LocationListener,
         return true;
       }
     });
-    return true;
+
+      // Locate MenuItem with ShareActionProvider
+      MenuItem item = menu.findItem(R.id.menu_item_share);
+
+      // Fetch and store ShareActionProvider
+      mShareActionProvider = (ShareActionProvider) item.getActionProvider();
+
+      // Return true to display menu
+      return true;
   }
 
   /*
