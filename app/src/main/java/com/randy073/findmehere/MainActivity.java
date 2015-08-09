@@ -260,6 +260,7 @@ public class MainActivity extends FragmentActivity implements LocationListener,
 
           String locationStr = "http://maps.google.com/maps?&daddr=" + latitude + "," + logitude;
 
+
           ClipboardManager clipboard = (ClipboardManager)
                   getSystemService(Context.CLIPBOARD_SERVICE);
 
@@ -276,6 +277,7 @@ public class MainActivity extends FragmentActivity implements LocationListener,
 
           Toast toast = Toast.makeText(context, text, duration);
           toast.show();
+
 
 
 
@@ -498,6 +500,17 @@ public class MainActivity extends FragmentActivity implements LocationListener,
   private void startPeriodicUpdates() {
     LocationServices.FusedLocationApi.requestLocationUpdates(
         locationClient, locationRequest, this);
+
+      Location loc = getLocation();
+      String locationStr = "http://maps.google.com/maps?&daddr=" + loc.getLatitude() + "," + loc.getLongitude();
+
+      Intent sendIntent = new Intent();
+      sendIntent.setAction(Intent.ACTION_SEND);
+      sendIntent.putExtra(Intent.EXTRA_TEXT,locationStr );
+      sendIntent.setType("text/plain");
+      if (mShareActionProvider != null) {
+          mShareActionProvider.setShareIntent(sendIntent);
+      }
   }
 
   /*
@@ -757,10 +770,10 @@ public class MainActivity extends FragmentActivity implements LocationListener,
     getMenuInflater().inflate(R.menu.main, menu);
 
     menu.findItem(R.id.action_settings).setOnMenuItemClickListener(new OnMenuItemClickListener() {
-      public boolean onMenuItemClick(MenuItem item) {
-        startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-        return true;
-      }
+        public boolean onMenuItemClick(MenuItem item) {
+            startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+            return true;
+        }
     });
 
       // Locate MenuItem with ShareActionProvider
@@ -768,6 +781,11 @@ public class MainActivity extends FragmentActivity implements LocationListener,
 
       // Fetch and store ShareActionProvider
       mShareActionProvider = (ShareActionProvider) item.getActionProvider();
+
+
+
+
+
 
       // Return true to display menu
       return true;
